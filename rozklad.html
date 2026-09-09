@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Розклад · Міжнародні відносини</title>
+<style>
+  :root{
+    --bg: #0a0e27;
+    --bg-panel: #10163a;
+    --bg-cell: #131a45;
+    --line: #262f6b;
+    --line-soft: #1b2354;
+    --text: #eef0fb;
+    --text-dim: #8891c4;
+    --text-faint: #565f95;
+    --gold: #e8b84b;
+    --lek: #5b8def;
+    --pr: #3fbf8f;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(ellipse 1200px 600px at 50% -10%, #161d4d 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    padding: 20px 12px 50px;
+  }
+  .wrap{ max-width: 1080px; margin: 0 auto; }
+
+  /* ---- Header ---- */
+  header{ text-align:center; margin-bottom: 20px; }
+  .crest{
+    width:48px; height:48px; margin:0 auto 12px; border-radius:50%;
+    border:2px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:16px; color:var(--gold);
+  }
+  h1{
+    font-size: clamp(23px, 6vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+    color: #fff;
+  }
+  .subtitle{ color: var(--text-dim); font-size: clamp(12.5px, 3vw, 14.5px); margin: 0; padding: 0 8px; }
+  .subtitle b{ color: var(--text); font-weight:600; }
+  .silence-note{
+    display:inline-block; margin-top:9px; font-size:12px; color: var(--text-faint);
+    font-style: italic;
+  }
+
+  /* ---- Controls ---- */
+  .controls{
+    background: var(--bg-panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 14px 14px;
+    margin-bottom: 16px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+
+  .week-nav{ display:flex; align-items:center; gap:8px; flex:1; justify-content:center; min-width:0; }
+  .nav-btn{
+    background: var(--bg-cell); border:1px solid var(--line); color: var(--text);
+    width:34px; height:34px; min-width:34px; border-radius:8px; font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .nav-btn:active{ background:#1a2158; }
+  .week-label{ text-align:center; min-width:0; }
+  .week-range{ font-weight:700; font-size:14.5px; color:#fff; white-space:nowrap; }
+  .week-type{
+    font-size:11px; font-weight:700; letter-spacing:0.03em; margin-top:3px;
+    padding: 2px 9px; border-radius:20px; display:inline-block; white-space:nowrap;
+  }
+  .week-type.upper{ background: rgba(91,141,239,0.15); color: var(--lek); }
+  .week-type.lower{ background: rgba(63,191,143,0.15); color: var(--pr); }
+
+  .today-btn{
+    background: transparent; border:1px solid var(--line); color: var(--text-dim);
+    padding: 7px 13px; border-radius: 8px; font-size: 12.5px; cursor:pointer;
+    flex-shrink:0; white-space:nowrap;
+  }
+  .today-btn:active{ color:#fff; border-color:#3a4590; }
+
+  .toggles{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .toggle-group{ display:flex; align-items:center; gap:8px; }
+  .toggle-label{ font-size:12px; color: var(--text-dim); white-space:nowrap; }
+  .toggle-btns{ display:flex; background: var(--bg-cell); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .toggle-btns button{
+    background:transparent; border:none; color: var(--text-dim);
+    padding: 8px 15px; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .toggle-btns button + button{ border-left:1px solid var(--line); }
+  .toggle-btns button.active{ background: var(--gold); color:#251c04; }
+
+  /* ---- Lesson chip (shared look) ---- */
+  .lesson-type-tag{
+    display:inline-block; font-size:10px; font-weight:700; letter-spacing:0.02em;
+    padding:1px 7px; border-radius:20px; margin-bottom:5px;
+    background: rgba(91,141,239,0.15); color: var(--lek);
+  }
+  .lesson.pr .lesson-type-tag{ background: rgba(63,191,143,0.15); color: var(--pr); }
+  .lesson-subject{ font-size:13.5px; font-weight:700; color:#fff; line-height:1.32; margin-bottom:5px; }
+  .lesson-meta{ font-size:12px; color: var(--text-dim); line-height:1.55; }
+
+  /* ---- Desktop grid (>700px) ---- */
+  .grid-scroll{ overflow-x:auto; border-radius: var(--radius); border:1px solid var(--line-soft); }
+  table{ border-collapse: collapse; width:100%; min-width: 720px; background: var(--bg-panel); }
+  thead th{
+    text-align:left; padding: 14px 12px; font-size:13px; font-weight:700;
+    color:#fff; border-bottom:1px solid var(--line-soft); white-space:nowrap;
+  }
+  thead th.time-col{ width:76px; color: var(--text-faint); font-weight:600; }
+  thead th.day-col.is-today{ color: var(--gold); }
+  .day-date{ display:block; font-size:11px; font-weight:500; color: var(--text-faint); margin-top:2px; }
+  thead th.day-col.is-today .day-date{ color: var(--gold); opacity:0.8; }
+  tbody td.time-col{
+    padding: 10px 12px; vertical-align:top; border-bottom:1px solid var(--line-soft);
+    border-right:1px solid var(--line-soft);
+  }
+  .period-num{ font-size:15px; font-weight:800; color:#fff; }
+  .period-time{ font-size:11px; color: var(--text-faint); white-space:nowrap; }
+  td.cell{ padding:8px; vertical-align:top; border-bottom:1px solid var(--line-soft); min-width:170px; }
+  tr:last-child td{ border-bottom:none; }
+  td.cell.col-today{ background: rgba(232,184,75,0.045); }
+  .lesson{ background: var(--bg-cell); border-radius: 8px; padding: 9px 10px 9px 12px; border-left: 3px solid var(--lek); height:100%; }
+  .lesson.pr{ border-left-color: var(--pr); }
+  .empty-cell{ height:100%; min-height:40px; }
+
+  /* ---- Mobile view (<=700px) ---- */
+  .day-tabs{ display:none; gap:6px; margin-bottom:14px; }
+  .day-tabs button{
+    flex:1; background:var(--bg-cell); border:1px solid var(--line); color:var(--text-dim);
+    padding:9px 2px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .day-tabs button.active{ background: var(--gold); color:#251c04; border-color:var(--gold); }
+  .day-tabs button .tab-date{ display:block; font-size:10px; font-weight:500; opacity:0.8; margin-top:2px; }
+  .day-tabs button.is-today:not(.active){ border-color: var(--gold); color: var(--gold); }
+
+  .mobile-day-view{ display:none; flex-direction:column; gap:10px; }
+  .mobile-card{
+    background: var(--bg-panel); border:1px solid var(--line-soft); border-radius:12px;
+    padding:13px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .mobile-time{ min-width:52px; text-align:center; flex-shrink:0; padding-top:1px; }
+  .mobile-time .num{ font-size:19px; font-weight:800; color:#fff; line-height:1; }
+  .mobile-time .rng{ font-size:10px; color:var(--text-faint); margin-top:3px; line-height:1.3; }
+  .mobile-card .lesson{ flex:1; padding:0; background:none; border-left:3px solid var(--lek); padding-left:12px; }
+  .mobile-card .lesson.pr{ border-left-color: var(--pr); }
+  .mobile-empty{ text-align:center; padding:38px 20px; color:var(--text-faint); font-size:13.5px; background:var(--bg-panel); border-radius:12px; border:1px solid var(--line-soft); }
+
+  footer{ text-align:center; margin-top:22px; color: var(--text-faint); font-size:11.5px; padding:0 10px; }
+
+  @media (max-width: 700px){
+    .grid-scroll{ display:none; }
+    .day-tabs{ display:flex; }
+    .mobile-day-view{ display:flex; }
+  }
+  @media (max-width: 380px){
+    .toggle-label{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="crest">ФІМВ</div>
+    <h1>Розклад пар</h1>
+    <p class="subtitle"><b>Міжнародні відносини</b> · Б26_д/С3 · 1 курс · 1 семестр 2026/2027</p>
+    <span class="silence-note">Хвилина мовчання: 9:00–9:01</span>
+  </header>
+
+  <div class="controls">
+    <div class="row">
+      <button class="nav-btn" id="prevWeek" aria-label="Попередній тиждень">‹</button>
+      <div class="week-nav" style="flex:0;">
+        <div class="week-label">
+          <div class="week-range" id="weekRange">—</div>
+          <span class="week-type" id="weekType">—</span>
+        </div>
+      </div>
+      <button class="nav-btn" id="nextWeek" aria-label="Наступний тиждень">›</button>
+      <button class="today-btn" id="todayBtn">Поточний тиждень</button>
+    </div>
+
+    <div class="row toggles">
+      <div class="toggle-group">
+        <span class="toggle-label">Мовна підгрупа</span>
+        <div class="toggle-btns" id="langToggle">
+          <button data-val="1">1</button>
+          <button data-val="2">2</button>
+        </div>
+      </div>
+      <div class="toggle-group">
+        <span class="toggle-label">Антикорупція</span>
+        <div class="toggle-btns" id="antiToggle">
+          <button data-val="А">А</button>
+          <button data-val="Б">Б</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile: day tabs + stacked cards -->
+  <div class="day-tabs" id="dayTabs"></div>
+  <div class="mobile-day-view" id="mobileDayView"></div>
+
+  <!-- Desktop: full week grid -->
+  <div class="grid-scroll">
+    <table>
+      <thead>
+        <tr id="headRow">
+          <th class="time-col">Пара</th>
+        </tr>
+      </thead>
+      <tbody id="gridBody"></tbody>
+    </table>
+  </div>
+
+  <footer>Дані зі схваленого розкладу занять на 1 семестр 2026/2027 н.р. · верхній/нижній тиждень визначається автоматично</footer>
+
+</div>
+
+<script>
+(function(){
+
+  // ---------- Reference data ----------
+  const DAY_NAMES = ['Понеділок','Вівторок','Середа','Четвер'];
+  const DAY_SHORT = ['Пн','Вт','Ср','Чт'];
+
+  const PERIOD_TIMES = {
+    1: ['08:00','09:31'],
+    2: ['09:40','11:10'],
+    3: ['11:20','12:50'],
+    4: ['13:10','14:40'],
+    5: ['14:50','16:20'],
+    6: ['16:30','18:00'],
+  };
+
+  // day: 0=Mon .. 3=Thu ; weeks: 'both' | 'upper' | 'lower'
+  const ENTRIES = [
+    // Monday
+    {day:0, period:3, weeks:'both', subject:'Міжнародні відносини і світова політика', type:'Лек.', room:'ауд. 211, Грушевського, 2', teacher:'доц. Теміров Ю.Т.'},
+    {day:0, period:4, weeks:'both', subject:'Країнознавство', type:'Лек.', room:'ауд. 211, Грушевського, 2', teacher:'ст. викл. Лебідь І.Г.'},
+    {day:0, period:5, weeks:'both', subject:'Країнознавство', type:'Пр.', room:'ауд. 211, Грушевського, 2', teacher:'ст. викл. Лебідь І.Г.'},
+
+    // Tuesday
+    {day:1, period:3, weeks:'both', subject:'Вступ до спеціальності. Основи академічного письма', type:'Лек.', room:'ауд. 212, Грушевського, 2', teacher:'ст. викл. Прихненко М.І.'},
+    {day:1, period:4, weeks:'both', subject:'Вступ до спеціальності. Основи академічного письма', type:'Пр.', room:'ауд. 212, Грушевського, 2', teacher:'ст. викл. Прихненко М.І.'},
+
+    // Wednesday
+    {day:2, period:2, weeks:'both', subject:'Іноземна мова професійного спрямування', type:'Пр.', room:'ауд. 218, Грушевського, 2', teacher:'ст. викл. Зубенко О.В.', subGroup:'lang', subVal:'1'},
+    {day:2, period:3, weeks:'both', subject:'Іноземна мова професійного спрямування', type:'Пр.', room:'ауд. 218, Грушевського, 2', teacher:'ст. викл. Зубенко О.В.', subGroup:'lang', subVal:'1'},
+    {day:2, period:3, weeks:'both', subject:'Іноземна мова професійного спрямування', type:'Пр.', room:'ауд. 219, Грушевського, 2', teacher:'ст. викл. Одінцова О.О.', subGroup:'lang', subVal:'2'},
+    {day:2, period:4, weeks:'both', subject:'Іноземна мова професійного спрямування', type:'Пр.', room:'ауд. 219, Грушевського, 2', teacher:'ст. викл. Одінцова О.О.', subGroup:'lang', subVal:'2'},
+    {day:2, period:5, weeks:'both', subject:'Міжнародні відносини і світова політика', type:'Пр.', room:'ауд. 212, Грушевського, 2', teacher:'асист. Берегута В.В.'},
+    {day:2, period:6, weeks:'lower', subject:'Конфліктологія', type:'Лек.', room:'ауд. 211, Грушевського, 2', teacher:'доц. Богінська І.В.'},
+
+    // Thursday
+    {day:3, period:1, weeks:'lower', subject:'Конфліктологія', type:'Пр.', room:'ауд. 211, Грушевського, 2', teacher:'доц. Богінська І.В.'},
+    {day:3, period:2, weeks:'lower', subject:'Конфліктологія', type:'Пр.', room:'ауд. 211, Грушевського, 2', teacher:'доц. Богінська І.В.'},
+    {day:3, period:3, weeks:'upper', subject:'Історія України в інформаційному протистоянні', type:'Лек.', room:'ауд. 211, Грушевського, 2', teacher:'доц. Мєлєкєсцев К.І.'},
+    {day:3, period:3, weeks:'lower', subject:'Історія України в інформаційному протистоянні', type:'Пр.', room:'ауд. 211, Грушевського, 2', teacher:'доц. Мєлєкєсцев К.І.'},
+    {day:3, period:5, weeks:'both', subject:'Антикорупція та доброчесність: принципи демократії та верховенства права', type:'Лек.', room:'MS Teams', subGroup:'anti', dynamicTeacher:true},
+    {day:3, period:6, weeks:'upper', subject:'Антикорупція та доброчесність: принципи демократії та верховенства права', type:'Пр.', room:'MS Teams', subGroup:'anti', dynamicTeacher:true},
+  ];
+
+  const ANTI_SWAP_DATE = new Date(2026,9,29); // 29 Oct 2026 — instructors swap subgroups from this date
+
+  function getAntiTeacher(subVal, thursdayDate){
+    const swapped = thursdayDate >= ANTI_SWAP_DATE;
+    if(subVal === 'А') return swapped ? 'ст. викл. Дубель М.В.' : 'доц. Краковська А.Є.';
+    return swapped ? 'доц. Краковська А.Є.' : 'ст. викл. Дубель М.В.';
+  }
+
+  // ---------- Week math ----------
+  const ANCHOR_MONDAY = new Date(2026,8,7); // 7 Sep 2026 = 'lower' week
+  const ANCHOR_TYPE = 'lower';
+  const MONTHS_GEN = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
+
+  function mondayOf(date){
+    const d = new Date(date); d.setHours(0,0,0,0);
+    const day = d.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+  function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+  function sameDate(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+  function weekTypeFor(monday){
+    const diffDays = Math.round((monday - ANCHOR_MONDAY) / 86400000);
+    const diffWeeks = Math.round(diffDays / 7);
+    const isEven = ((diffWeeks % 2) + 2) % 2 === 0;
+    if(isEven) return ANCHOR_TYPE;
+    return ANCHOR_TYPE === 'lower' ? 'upper' : 'lower';
+  }
+  function fmtRange(monday){
+    const thu = addDays(monday, 3);
+    const sameMonth = monday.getMonth() === thu.getMonth();
+    if(sameMonth) return `${monday.getDate()}–${thu.getDate()} ${MONTHS_GEN[monday.getMonth()]}`;
+    return `${monday.getDate()} ${MONTHS_GEN[monday.getMonth()]} – ${thu.getDate()} ${MONTHS_GEN[thu.getMonth()]}`;
+  }
+
+  // ---------- State ----------
+  const today = new Date(); today.setHours(0,0,0,0);
+  let currentMonday = mondayOf(today);
+  let langSub = '1';
+  let antiSub = 'А';
+  let mobileDay = (() => { const g = today.getDay(); return (g>=1 && g<=4) ? g-1 : 0; })();
+
+  // ---------- Storage ----------
+  async function loadPrefs(){
+    try{
+      const res = await window.storage.get('prefs');
+      if(res && res.value){
+        const p = JSON.parse(res.value);
+        if(p.langSub) langSub = p.langSub;
+        if(p.antiSub) antiSub = p.antiSub;
+      }
+    }catch(e){}
+    syncToggleUI();
+  }
+  async function savePrefs(){
+    try{ await window.storage.set('prefs', JSON.stringify({langSub, antiSub})); }catch(e){}
+  }
+
+  // ---------- Shared matrix ----------
+  function computeMatrix(wType){
+    const matrix = {};
+    for(let day=0; day<4; day++){
+      matrix[day] = {};
+      for(let p=1;p<=6;p++){
+        const matches = ENTRIES.filter(e => {
+          if(e.day !== day || e.period !== p) return false;
+          if(e.weeks !== 'both' && e.weeks !== wType) return false;
+          if(e.subGroup === 'lang' && e.subVal !== langSub) return false;
+          return true;
+        });
+        matrix[day][p] = matches.length ? matches[0] : null;
+      }
+    }
+    return matrix;
+  }
+  function lessonInnerHTML(entry, date){
+    const teacher = entry.dynamicTeacher ? getAntiTeacher(antiSub, date) : entry.teacher;
+    return `
+      <span class="lesson-type-tag">${entry.type === 'Лек.' ? 'Лекція' : 'Практична'}</span>
+      <div class="lesson-subject">${entry.subject}</div>
+      <div class="lesson-meta">${teacher}<br>${entry.room}${entry.subGroup==='anti' ? '<br>Підгрупа '+antiSub : ''}</div>`;
+  }
+
+  // ---------- DOM refs ----------
+  const headRow = document.getElementById('headRow');
+  const gridBody = document.getElementById('gridBody');
+  const weekRangeEl = document.getElementById('weekRange');
+  const weekTypeEl = document.getElementById('weekType');
+  const dayTabsEl = document.getElementById('dayTabs');
+  const mobileViewEl = document.getElementById('mobileDayView');
+
+  function render(){
+    const wType = weekTypeFor(currentMonday);
+    const dayDates = [0,1,2,3].map(i => addDays(currentMonday, i));
+    const matrix = computeMatrix(wType);
+
+    weekRangeEl.textContent = fmtRange(currentMonday);
+    weekTypeEl.textContent = wType === 'upper' ? 'Верхній тиждень' : 'Нижній тиждень';
+    weekTypeEl.className = 'week-type ' + wType;
+
+    // ---- Desktop table ----
+    headRow.innerHTML = '<th class="time-col">Пара</th>';
+    dayDates.forEach((d, i) => {
+      const isToday = sameDate(d, today);
+      const th = document.createElement('th');
+      th.className = 'day-col' + (isToday ? ' is-today' : '');
+      th.innerHTML = DAY_NAMES[i] + '<span class="day-date">' + d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + (isToday ? ' · сьогодні' : '') + '</span>';
+      headRow.appendChild(th);
+    });
+    gridBody.innerHTML = '';
+    [1,2,3,4,5,6].forEach(p => {
+      const tr = document.createElement('tr');
+      const timeTd = document.createElement('td');
+      timeTd.className = 'time-col';
+      timeTd.innerHTML = '<span class="period-num">' + p + '</span><br><span class="period-time">' + PERIOD_TIMES[p][0] + '–' + PERIOD_TIMES[p][1] + '</span>';
+      tr.appendChild(timeTd);
+      for(let day=0; day<4; day++){
+        const isToday = sameDate(dayDates[day], today);
+        const td = document.createElement('td');
+        td.className = 'cell' + (isToday ? ' col-today' : '');
+        const entry = matrix[day][p];
+        if(entry){
+          const typeClass = entry.type.startsWith('Пр') ? 'pr' : 'lek';
+          td.innerHTML = `<div class="lesson ${typeClass}">${lessonInnerHTML(entry, dayDates[day])}</div>`;
+        } else {
+          td.innerHTML = '<div class="empty-cell"></div>';
+        }
+        tr.appendChild(td);
+      }
+      gridBody.appendChild(tr);
+    });
+
+    // ---- Mobile day tabs ----
+    dayTabsEl.innerHTML = '';
+    dayDates.forEach((d, i) => {
+      const isToday = sameDate(d, today);
+      const btn = document.createElement('button');
+      btn.className = (i === mobileDay ? 'active ' : '') + (isToday ? 'is-today' : '');
+      btn.innerHTML = DAY_SHORT[i] + '<span class="tab-date">' + d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0') + '</span>';
+      btn.addEventListener('click', () => { mobileDay = i; render(); });
+      dayTabsEl.appendChild(btn);
+    });
+
+    // ---- Mobile card list ----
+    mobileViewEl.innerHTML = '';
+    const dayEntries = [1,2,3,4,5,6].filter(p => matrix[mobileDay][p]);
+    if(dayEntries.length === 0){
+      mobileViewEl.innerHTML = '<div class="mobile-empty">Пар немає 🎉</div>';
+    } else {
+      dayEntries.forEach(p => {
+        const entry = matrix[mobileDay][p];
+        const typeClass = entry.type.startsWith('Пр') ? 'pr' : 'lek';
+        const card = document.createElement('div');
+        card.className = 'mobile-card';
+        card.innerHTML = `
+          <div class="mobile-time">
+            <div class="num">${p}</div>
+            <div class="rng">${PERIOD_TIMES[p][0]}<br>${PERIOD_TIMES[p][1]}</div>
+          </div>
+          <div class="lesson ${typeClass}">${lessonInnerHTML(entry, dayDates[mobileDay])}</div>`;
+        mobileViewEl.appendChild(card);
+      });
+    }
+  }
+
+  function syncToggleUI(){
+    document.querySelectorAll('#langToggle button').forEach(b => b.classList.toggle('active', b.dataset.val === langSub));
+    document.querySelectorAll('#antiToggle button').forEach(b => b.classList.toggle('active', b.dataset.val === antiSub));
+  }
+
+  // ---------- Events ----------
+  document.getElementById('prevWeek').addEventListener('click', () => { currentMonday = addDays(currentMonday, -7); render(); });
+  document.getElementById('nextWeek').addEventListener('click', () => { currentMonday = addDays(currentMonday, 7); render(); });
+  document.getElementById('todayBtn').addEventListener('click', () => { currentMonday = mondayOf(new Date()); render(); });
+  document.querySelectorAll('#langToggle button').forEach(b => b.addEventListener('click', () => { langSub = b.dataset.val; syncToggleUI(); savePrefs(); render(); }));
+  document.querySelectorAll('#antiToggle button').forEach(b => b.addEventListener('click', () => { antiSub = b.dataset.val; syncToggleUI(); savePrefs(); render(); }));
+
+  // ---------- Init ----------
+  loadPrefs().then(render);
+  render();
+})();
+</script>
+</body>
+</html>
