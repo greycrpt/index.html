@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Розклад МВ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDEFF4;
+  --surface:#FFFFFF;
+  --surface-2:#F5F6FA;
+  --line:#D8DCE6;
+  --line-soft:#E6E9F0;
+  --text:#14171F;
+  --text-2:#5A6175;
+  --text-3:#8990A3;
+  --accent:#2F4BC4;
+  --accent-soft:#E4E8FB;
+  --alt:#2E6F5E;
+  --alt-soft:#DDECE6;
+  --live:#B8791A;
+  --live-soft:#FBEFD8;
+  --on-accent:#FFFFFF;
+  --radius:14px;
+  --gutter:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1016;
+    --surface:#161A23;
+    --surface-2:#1C212C;
+    --line:#2A303D;
+    --line-soft:#232936;
+    --text:#EDF0F6;
+    --text-2:#A2AABC;
+    --text-3:#727A8D;
+    --accent:#8AA0FF;
+    --accent-soft:#1E2648;
+    --alt:#6FC4A8;
+    --alt-soft:#12302A;
+    --live:#E8B45C;
+    --live-soft:#3A2C11;
+    --on-accent:#0E1016;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1016;
+  --surface:#161A23;
+  --surface-2:#1C212C;
+  --line:#2A303D;
+  --line-soft:#232936;
+  --text:#EDF0F6;
+  --text-2:#A2AABC;
+  --text-3:#727A8D;
+  --accent:#8AA0FF;
+  --accent-soft:#1E2648;
+  --alt:#6FC4A8;
+  --alt-soft:#12302A;
+  --live:#E8B45C;
+  --live-soft:#3A2C11;
+  --on-accent:#0E1016;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:var(--gutter);padding-block:28px 48px}
+
+/* header */
+.masthead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:20px}
+h1{
+  font-family:"Unbounded","IBM Plex Sans",sans-serif;
+  font-weight:700;
+  font-size:clamp(24px,4.6vw,34px);
+  letter-spacing:-.02em;
+  line-height:1.05;
+  margin:0;
+  text-wrap:balance;
+}
+.sub{margin:6px 0 0;color:var(--text-2);font-size:13.5px}
+.sub b{color:var(--text);font-weight:600}
+
+/* now bar */
+.now{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;
+}
+.now-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:none}
+.now-main{font-weight:600;font-size:15px}
+.now-main .muted{font-weight:400;color:var(--text-2)}
+.now-date{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--text-3);text-transform:lowercase}
+
+/* week switch */
+.weekbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:22px}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{
+  font:inherit;font-size:13.5px;font-weight:500;
+  border:0;background:transparent;color:var(--text-2);
+  padding:7px 16px;border-radius:999px;cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.weeknote{font-size:13px;color:var(--text-3)}
+.weeknote b{color:var(--text-2);font-weight:500}
+
+/* grid */
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.day.today{border-color:var(--accent)}
+.day-head{
+  display:flex;align-items:baseline;gap:10px;
+  padding:13px 16px;border-bottom:1px solid var(--line-soft);
+  background:var(--surface-2);
+}
+.day-name{font-weight:600;font-size:13px;letter-spacing:.09em;text-transform:uppercase}
+.day-count{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-3);margin-left:auto}
+.today-tag{
+  font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:2px 6px;
+}
+
+.lesson{display:flex;gap:14px;padding:14px 16px;border-top:1px solid var(--line-soft)}
+.lesson:first-of-type{border-top:0}
+.lesson.live{background:var(--live-soft)}
+.rail{flex:none;width:56px;text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.rail .num{display:block;font-size:12px;color:var(--text-3);letter-spacing:.04em}
+.rail .t1{display:block;font-size:14px;font-weight:500;margin-top:2px}
+.rail .t2{display:block;font-size:12px;color:var(--text-3)}
+.body{min-width:0;flex:1}
+.title{font-weight:600;font-size:14.5px;line-height:1.3;margin:0 0 6px;text-wrap:pretty}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12.5px;color:var(--text-2)}
+.chip{
+  font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  padding:2px 7px;border-radius:5px;
+}
+.chip.lek{color:var(--accent);background:var(--accent-soft)}
+.chip.pr{color:var(--alt);background:var(--alt-soft)}
+.chip.week{color:var(--text-2);background:var(--surface-2);border:1px solid var(--line)}
+.chip.livechip{color:var(--live);background:transparent;border:1px solid var(--live)}
+.room{font-family:"IBM Plex Mono",monospace;font-size:12px}
+.teacher{color:var(--text-3)}
+
+.dates{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.dates .grp{width:100%;font-size:12px;color:var(--text-2);margin-top:4px}
+.d{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  padding:2px 6px;border-radius:5px;border:1px solid var(--line);color:var(--text-2);
+}
+.d.past{opacity:.4;text-decoration:line-through}
+.d.next{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+
+.free{display:flex;align-items:center;gap:10px;padding:14px 16px;color:var(--text-3);font-size:13.5px}
+.free .day-name{color:var(--text-3)}
+
+footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--text-3);font-size:12.5px;display:flex;flex-wrap:wrap;gap:6px 16px}
+footer .mono{font-family:"IBM Plex Mono",monospace}
+
+@media (max-width:420px){
+  .rail{width:50px}
+  .now-date{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1>Розклад МВ</h1>
+      <p class="sub"><b>Б26_д/С3 Міжнародні відносини</b> · 1 курс · І семестр 2026&ndash;2027 · ДонНУ ім. В.&nbsp;Стуса</p>
+    </div>
+  </header>
+
+  <div class="now" id="now">
+    <span class="now-dot" id="nowDot"></span>
+    <span class="now-main" id="nowMain">&nbsp;</span>
+    <span class="now-date" id="nowDate"></span>
+  </div>
+
+  <div class="weekbar">
+    <div class="seg" role="group" aria-label="Тиждень">
+      <button id="btnUp" type="button" aria-pressed="false">Верхній тиждень</button>
+      <button id="btnDown" type="button" aria-pressed="false">Нижній тиждень</button>
+    </div>
+    <span class="weeknote" id="weekNote"></span>
+  </div>
+
+  <main class="days" id="days"></main>
+
+  <footer>
+    <span>Вівторок і п'ятниця — <b>вільні</b></span>
+    <span>Ін. мова — <b>підгрупа 1</b> · Антикорупція — <b>підгрупа Б</b></span>
+    <span class="mono">ауд. — Грушевського, 2</span>
+  </footer>
+</div>
+
+<script>
+const TIMES = {
+  "I":   ["08:00","09:20"],
+  "II":  ["09:30","10:50"],
+  "III": ["11:00","12:20"],
+  "IV":  ["12:40","14:00"],
+  "V":   ["14:10","15:30"],
+  "VI":  ["15:40","17:00"]
+};
+
+// Верхній тиждень = тиждень, що починається з понеділка 31.08.2026
+const REF_MONDAY = new Date(2026, 7, 31);
+
+const AK = "Антикорупція та доброчесність: принципи демократії та верховенства права";
+
+const DAYS = [
+  { dow:1, name:"Понеділок", items:[
+    { slot:"I",   title:"Вступ до спеціальності. Основи академічного письма", kind:"Лек.", room:"ауд. 212", teacher:"ст. викл. Прихненко М.І.", weeks:["up","down"] },
+    { slot:"II",  title:"Вступ до спеціальності. Основи академічного письма", kind:"Пр.",  room:"ауд. 212", teacher:"ст. викл. Прихненко М.І.", weeks:["up","down"] },
+    { slot:"III", title:"Міжнародні відносини і світова політика", kind:"Лек.", room:"ауд. 211", teacher:"доц. Теміров Ю.Т.", weeks:["up","down"] },
+    { slot:"IV",  title:"Країнознавство", kind:"Лек.", room:"ауд. 211", teacher:"ст. викл. Лебідь І.Г.", weeks:["up","down"] },
+    { slot:"V",   title:"Країнознавство", kind:"Пр.",  room:"ауд. 211", teacher:"ст. викл. Лебідь І.Г.", weeks:["up","down"] }
+  ]},
+  { dow:2, name:"Вівторок", free:true },
+  { dow:3, name:"Середа", items:[
+    { slot:"II",  title:"Іноземна мова професійного спрямування", kind:"Пр.", room:"ауд. 218", teacher:"ст. викл. Зубенко О.В.", weeks:["up","down"] },
+    { slot:"III", title:"Іноземна мова професійного спрямування", kind:"Пр.", room:"ауд. 218", teacher:"ст. викл. Зубенко О.В.", weeks:["up","down"] },
+    { slot:"V",   title:"Міжнародні відносини і світова політика", kind:"Пр.", room:"ауд. 212", teacher:"асист. Берегута В.В.", weeks:["up","down"] },
+    { slot:"VI",  title:"Конфліктологія", kind:"Лек.", room:"ауд. 211", teacher:"доц. Богінська І.В.", weeks:["down"] }
+  ]},
+  { dow:4, name:"Четвер", items:[
+    { slot:"I",  title:"Конфліктологія", kind:"Пр.", room:"ауд. 211", teacher:"доц. Богінська І.В.", weeks:["down"] },
+    { slot:"II", title:"Конфліктологія", kind:"Пр.", room:"ауд. 211", teacher:"доц. Богінська І.В.", weeks:["down"] },
+    { slot:"III", title:"Історія України в інформаційному протистоянні", kindByWeek:{up:"Лек.",down:"Пр."}, room:"ауд. 211", teacher:"доц. Мєлєкєсцев К.І.", weeks:["up","down"] },
+    { slot:"V", title:AK, kind:"Лек.", room:"MS Teams", weeks:["up","down"], variants:[
+        { teacher:"ст. викл. Дубель М.В.",  up:["03.09","17.09","01.10","15.10"], down:["10.09","24.09","08.10","22.10"] },
+        { teacher:"доц. Краковська А.Є.",   up:["29.10","12.11","26.11","10.12"], down:["05.11","19.11","03.12","17.12"] }
+    ]},
+    { slot:"VI", title:AK, kind:"Пр.", room:"MS Teams", weeks:["up"], variants:[
+        { teacher:"ст. викл. Дубель М.В.",  up:["03.09","17.09","01.10","15.10"], down:[] },
+        { teacher:"доц. Краковська А.Є.",   up:["29.10","12.11","26.11","10.12"], down:[] }
+    ]}
+  ]},
+  { dow:5, name:"П'ятниця", free:true }
+];
+
+const now = new Date();
+
+function mondayOf(d){
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const shift = (x.getDay() + 6) % 7;
+  x.setDate(x.getDate() - shift);
+  return x;
+}
+function currentParity(){
+  const diff = Math.round((mondayOf(now) - REF_MONDAY) / 604800000);
+  return ((diff % 2) + 2) % 2 === 0 ? "up" : "down";
+}
+function minutes(hhmm){ const [h,m] = hhmm.split(":").map(Number); return h*60+m; }
+
+const parityNow = currentParity();
+let shown = parityNow;
+
+/* ---------- now bar ---------- */
+function slotAt(){
+  const dow = now.getDay();
+  const day = DAYS.find(d => d.dow === dow);
+  if(!day || day.free) return null;
+  const mins = now.getHours()*60 + now.getMinutes();
+  const items = day.items.filter(i => i.weeks.includes(parityNow));
+  for(const it of items){
+    const [a,b] = TIMES[it.slot];
+    if(mins >= minutes(a) && mins <= minutes(b)) return {it, state:"live", end:b};
+    if(mins < minutes(a)) return {it, state:"next", start:a};
+  }
+  return {state:"done"};
+}
+function renderNow(){
+  const fmt = now.toLocaleDateString("uk-UA",{weekday:"long", day:"numeric", month:"long"});
+  document.getElementById("nowDate").textContent = fmt;
+  const dot = document.getElementById("nowDot");
+  const main = document.getElementById("nowMain");
+  const s = slotAt();
+  if(!s){
+    dot.style.background = "var(--text-3)";
+    main.innerHTML = '<span class="muted">Сьогодні пар немає</span>';
+  } else if(s.state === "live"){
+    main.innerHTML = 'Зараз: ' + s.it.title + ' <span class="muted">до ' + s.end + '</span>';
+  } else if(s.state === "next"){
+    dot.style.background = "var(--accent)";
+    main.innerHTML = 'Наступна о ' + s.start + ': <span class="muted">' + s.it.title + '</span>';
+  } else {
+    dot.style.background = "var(--text-3)";
+    main.innerHTML = '<span class="muted">Пари на сьогодні закінчились</span>';
+  }
+}
+
+/* ---------- dates ---------- */
+function dateState(dm){
+  const [d,m] = dm.split(".").map(Number);
+  const dt = new Date(2026, m-1, d);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if(dt < today) return "past";
+  return "future";
+}
+function nextOf(all){
+  const fut = all.filter(dm => dateState(dm) === "future");
+  return fut.length ? fut[0] : null;
+}
+function markDates(list, next){
+  return list.map(dm => ({dm, cls: dateState(dm) === "past" ? "past" : (dm === next ? "next" : "")}));
+}
+
+/* ---------- render ---------- */
+function esc(s){ return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function lessonHTML(it, isToday){
+  const [a,b] = TIMES[it.slot];
+  const kind = it.kindByWeek ? it.kindByWeek[shown] : it.kind;
+  const mins = now.getHours()*60 + now.getMinutes();
+  const live = isToday && shown === parityNow && mins >= minutes(a) && mins <= minutes(b);
+
+  let meta = '<span class="chip ' + (kind === "Лек." ? "lek" : "pr") + '">' + (kind === "Лек." ? "лекція" : "практика") + '</span>';
+  meta += '<span class="room">' + esc(it.room) + '</span>';
+  if(it.teacher) meta += '<span class="teacher">' + esc(it.teacher) + '</span>';
+  if(it.weeks.length === 1) meta += '<span class="chip week">тільки ' + (it.weeks[0] === "up" ? "верхній" : "нижній") + '</span>';
+  if(live) meta += '<span class="chip livechip">зараз</span>';
+
+  let dates = "";
+  if(it.variants){
+    const all = it.variants.flatMap(v => v[shown]);
+    const next = nextOf(all);
+    dates = '<div class="dates">';
+    for(const v of it.variants){
+      const list = v[shown];
+      if(!list.length) continue;
+      dates += '<span class="grp">' + esc(v.teacher) + '</span>';
+      for(const x of markDates(list, next)) dates += '<span class="d ' + x.cls + '">' + x.dm + '</span>';
+    }
+    dates += '</div>';
+  }
+
+  return '<div class="lesson' + (live ? " live" : "") + '">' +
+    '<div class="rail"><span class="num">' + it.slot + '</span><span class="t1">' + a + '</span><span class="t2">' + b + '</span></div>' +
+    '<div class="body"><p class="title">' + esc(it.title) + '</p><div class="meta">' + meta + '</div>' + dates + '</div>' +
+  '</div>';
+}
+
+function render(){
+  document.getElementById("btnUp").setAttribute("aria-pressed", shown === "up");
+  document.getElementById("btnDown").setAttribute("aria-pressed", shown === "down");
+  document.getElementById("weekNote").innerHTML = shown === parityNow
+    ? 'Поточний тиждень — <b>' + (parityNow === "up" ? "верхній" : "нижній") + '</b>'
+    : 'Перегляд іншого тижня. Поточний — <b>' + (parityNow === "up" ? "верхній" : "нижній") + '</b>';
+
+  const host = document.getElementById("days");
+  host.innerHTML = DAYS.map(day => {
+    const isToday = day.dow === now.getDay();
+    if(day.free) return "";
+    const items = day.items.filter(i => i.weeks.includes(shown));
+    if(!items.length) return "";
+    return '<section class="day' + (isToday ? " today" : "") + '">' +
+      '<div class="day-head"><span class="day-name">' + day.name + '</span>' +
+      (isToday ? '<span class="today-tag">сьогодні</span>' : '') +
+      '<span class="day-count">' + items.length + ' пар' + (items.length === 1 ? "а" : items.length < 5 ? "и" : "") + '</span></div>' +
+      items.map(i => lessonHTML(i, isToday)).join("") +
+    '</section>';
+  }).join("");
+}
+
+document.getElementById("btnUp").addEventListener("click", () => { shown = "up"; render(); });
+document.getElementById("btnDown").addEventListener("click", () => { shown = "down"; render(); });
+
+renderNow();
+render();
+</script>
+</body>
+</html>
